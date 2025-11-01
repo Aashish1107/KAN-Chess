@@ -1,6 +1,6 @@
 import numpy as np
 
-class ChessPositionEncoder:
+class ChessGameEncoder:
     def __init__(self):
         self.board=self.create_starting_position()
         self.board_history=[]
@@ -19,7 +19,7 @@ class ChessPositionEncoder:
             "castlingRights":{'K':True,'Q':True,'k':True,'q':True},
             "enPassantTarget":None,
         }
-        self.board_history.append(position)
+        self.board_history=[position]
         return position
     def encode_position(self, board):
         pass
@@ -31,5 +31,5 @@ class ChessPositionEncoder:
         pass
             
 if __name__ == "__main__":
-    encoder = ChessPositionEncoder()
+    encoder = ChessGameEncoder()
     print(encoder.board)
