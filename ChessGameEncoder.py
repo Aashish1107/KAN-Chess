@@ -1,11 +1,12 @@
 import numpy as np
 
+piece_types = {'P':0, 'N':1, 'B':2, 'R':3, 'Q':4, 'K':5, 'p':6, 'n':7, 'b':8, 'r':9, 'q':10, 'k':11}
+
 class ChessGameEncoder:
     def __init__(self):
         self.board=self.create_starting_position()
-        self.move_vount=0
+        self.move_count=0
         self.board_history=[]
-        self.piece_types = {'P':1, 'N':3, 'B':3.1, 'R':5, 'Q':9, 'K':100, 'p':1, 'n':3, 'b':3.1, 'r':5, 'q':9, 'k':100}
     def create_starting_position(self):
         position={
             "board":[['r','n','b','q','k','b','n','r'],
@@ -24,7 +25,42 @@ class ChessGameEncoder:
         return position
     def encode_position_to_tensor(self, board):
         #Generates a 8x8x119 numpy array/tensor representing the board position
+        tensor=np.zeros((8,8,119), dtype=np.uint8)
+        # Encode board pieces -12 channels
+        self.encode_single_board(tensor, self.board)
+        #Encode history -84 channels
+        self.encode_board_history(tensor)
+        #Encode castling rights - 4 channels
+        #tensor+=self.encode_castling(self.board["castlingRights"])
+        #Encode en passant target - 8 channel
+        #tensor+=self.encode_enpassant(self.board["enPassantTarget"])
+        #Encode repetition count
+        #tensor+=self.encode_repeatition(self.board)
+        
+        return tensor
+    def encode_board_history(self,tensor):
+        for i,board in enumerate(reversed(self.board_history)):
+            channelOffset=(i+1)*12
+            self.encode_single_board(self.board_history[i], channelOffset)
+    def encode_single_board(self, tensor, board, channelOffset=0):
+        for r in range(8):
+            for c in range(8):
+                piece=board["board"][r][c]
+                if piece is not None:
+                    piece_index=channelOffset+piece_types[piece]
+                    tensor[r,c,piece_index]=1
+    def encode_castling(self, castlingRights):
         pass
+    def encode_enpassant(self, enPassantTarget):
+        pass
+    def encode_repeatition(self, board):
+        pass
+    def count_repeatitions(self, board):
+        pass
+    def reset_board(self):
+        self.board_history=[]
+        self.board=self.create_starting_position()
+        self.move_vount=0
     def visualize_channels(self, encoded_position):
         pass
     def validate_move(self, piece, fromPos, toPos):
@@ -47,4 +83,5 @@ class ChessGameEncoder:
                     
 if __name__ == "__main__":
     encoder = ChessGameEncoder()
-    print(encoder.board)
+    tensor=encoder.encode_position_to_tensor(encoder.board)
+    print(tensor[:,:,0])
