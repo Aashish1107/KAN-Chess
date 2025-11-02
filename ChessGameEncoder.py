@@ -32,7 +32,7 @@ class ChessGameEncoder:
         #Encode history -84 channels
         self.encode_board_history(tensor)
         #Encode castling rights - 4 channels
-        #tensor+=self.encode_castling(self.board["castlingRights"])
+        self.encode_castling(tensor, self.board["castlingRights"])
         #Encode en passant target - 8 channel
         #tensor+=self.encode_enpassant(self.board["enPassantTarget"])
         #Encode repetition count
@@ -53,9 +53,16 @@ class ChessGameEncoder:
                     piece_index=channelOffset+piece_types[piece]
                     tensor[r,c,piece_index]=1
                     
-    def encode_castling(self, castlingRights):
-        pass
-    def encode_enpassant(self, enPassantTarget):
+    def encode_castling(self, tensor, castlingRights):
+        if castlingRights['K']:
+            tensor[:,:,96]=1
+        if castlingRights['Q']:
+            tensor[:,:,97]=1
+        if castlingRights['k']:
+            tensor[:,:,98]=1
+        if castlingRights['q']:
+            tensor[:,:,99]=1
+    def encode_enpassant(self, tensor, enPassantTarget):
         pass
     def encode_repeatition(self, board):
         pass
@@ -73,25 +80,17 @@ class ChessGameEncoder:
                 print(tensor[:,:,c])
         else:
             print(tensor[:,:,channels])
-    def validate_move(self, piece, fromPos, toPos):
-        pass
-    def decode_Command(self,command):
-        pass
-    def move_piece(self, command):
-        piece, fromPos, toPos=self.decode_Command(command)
-        isValid=self.validate_move(piece, fromPos, toPos)
-        if not isValid:
-            raise ValueError("Invalid Move")
+    def new_state(self, board):
         # Update board state
         self.board_history.append(self.board)
-        while self.board_history.__len__()>7:
+        self.board=board
+        while len(self.board_history)>7:
             self.board_history.pop(0)
-        self.board["board"][toPos[0]][toPos[1]]=piece
-        self.board["board"][fromPos[0]][fromPos[1]]=None
         self.move_count+=1 if self.board["whiteToMove"]==1 else 0
         self.board["whiteToMove"]=1-self.board["whiteToMove"]
                     
 if __name__ == "__main__":
     encoder = ChessGameEncoder()
     tensor=encoder.encode_position_to_tensor(encoder.board)
-    encoder.visualize_channels(tensor, range(12))
+    #encoder.visualize_channels(tensor, range(12))
+    #encoder.visualize_channels(tensor, [95,96,97,98,99])
