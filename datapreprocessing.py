@@ -1,4 +1,5 @@
 import pandas as pd
+from ChessGameEncoder import ChessGameEncoder
 
 # Read the CSV file and convert it into a pandas DataFrame
 file_path = "data/games.csv"
@@ -16,3 +17,8 @@ print(df_moves.head())
 
 games=[[move for move in game.split(' ')] for game in df_moves["moves"]]
 print(games[0])
+
+encoder=ChessGameEncoder()
+for move in games[0]:
+    encoder.move_piece(move)
+    print(encoder.board)
