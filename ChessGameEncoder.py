@@ -7,6 +7,7 @@ class ChessGameEncoder:
         self.board=self.create_starting_position()
         self.move_count=0
         self.board_history=[]
+        
     def create_starting_position(self):
         position={
             "board":[['r','n','b','q','k','b','n','r'],
@@ -38,10 +39,12 @@ class ChessGameEncoder:
         #tensor+=self.encode_repeatition(self.board)
         
         return tensor
+    
     def encode_board_history(self,tensor):
         for i,board in enumerate(reversed(self.board_history)):
             channelOffset=(i+1)*12
             self.encode_single_board(self.board_history[i], channelOffset)
+            
     def encode_single_board(self, tensor, board, channelOffset=0):
         for r in range(8):
             for c in range(8):
@@ -49,6 +52,7 @@ class ChessGameEncoder:
                 if piece is not None:
                     piece_index=channelOffset+piece_types[piece]
                     tensor[r,c,piece_index]=1
+                    
     def encode_castling(self, castlingRights):
         pass
     def encode_enpassant(self, enPassantTarget):
@@ -61,8 +65,14 @@ class ChessGameEncoder:
         self.board_history=[]
         self.board=self.create_starting_position()
         self.move_vount=0
-    def visualize_channels(self, encoded_position):
-        pass
+        
+    def visualize_channels(self, tensor, channels):
+        if(len(channels)>1 or channels=="all"):
+            for c in channels:
+                print("Channel: ", c)
+                print(tensor[:,:,c])
+        else:
+            print(tensor[:,:,channels])
     def validate_move(self, piece, fromPos, toPos):
         pass
     def decode_Command(self,command):
@@ -78,10 +88,10 @@ class ChessGameEncoder:
             self.board_history.pop(0)
         self.board["board"][toPos[0]][toPos[1]]=piece
         self.board["board"][fromPos[0]][fromPos[1]]=None
-        self.move_vount+=1 if self.board["whiteToMove"]==1 else 0
+        self.move_count+=1 if self.board["whiteToMove"]==1 else 0
         self.board["whiteToMove"]=1-self.board["whiteToMove"]
                     
 if __name__ == "__main__":
     encoder = ChessGameEncoder()
     tensor=encoder.encode_position_to_tensor(encoder.board)
-    print(tensor[:,:,0])
+    encoder.visualize_channels(tensor, range(12))
