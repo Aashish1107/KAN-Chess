@@ -34,7 +34,7 @@ class ChessGameEncoder:
         #Encode castling rights - 4 channels
         self.encode_castling(tensor, self.board["castlingRights"])
         #Encode en passant target - 8 channel
-        #tensor+=self.encode_enpassant(self.board["enPassantTarget"])
+        self.encode_enpassant(tensor,self.board["enPassantTarget"])
         #Encode repetition count
         #tensor+=self.encode_repeatition(self.board)
         
@@ -63,7 +63,10 @@ class ChessGameEncoder:
         if castlingRights['q']:
             tensor[:,:,99]=1
     def encode_enpassant(self, tensor, enPassantTarget):
-        pass
+        print("Enpassant Target:", enPassantTarget)
+        if enPassantTarget is not None:
+            tensor[ :, : ,100+enPassantTarget]=1
+        return tensor
     def encode_repeatition(self, board):
         pass
     def count_repeatitions(self, board):
@@ -71,14 +74,15 @@ class ChessGameEncoder:
     def reset_board(self):
         self.board_history=[]
         self.board=self.create_starting_position()
-        self.move_vount=0
+        self.move_count=0
         
     def visualize_channels(self, tensor, channels):
-        if(len(channels)>1 or channels=="all"):
+        if(type(channels)!=int and len(channels)>1 or channels=="all"):
             for c in channels:
                 print("Channel: ", c)
                 print(tensor[:,:,c])
         else:
+            print("Channel: ", channels)
             print(tensor[:,:,channels])
     def new_state(self, board):
         # Update board state
@@ -87,7 +91,7 @@ class ChessGameEncoder:
         while len(self.board_history)>7:
             self.board_history.pop(0)
         self.move_count+=1 if self.board["whiteToMove"]==1 else 0
-        self.board["whiteToMove"]=1-self.board["whiteToMove"]
+        #self.board["whiteToMove"]=1-self.board["whiteToMove"]
                     
 if __name__ == "__main__":
     encoder = ChessGameEncoder()

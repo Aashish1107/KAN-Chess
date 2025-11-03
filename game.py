@@ -12,7 +12,7 @@ def convert_board_to_array(board):
 class chessGame:
     def __init__(self):
         self.board = chess.Board()
-        result="0-0"
+        self.result="0-0"
 
     def print_board(self):
         print(self.board)
@@ -25,6 +25,8 @@ class chessGame:
             chess_move=self.board.parse_san(move)
             if chess_move in self.board.legal_moves:
                 self.board.push(chess_move)
+                if self.board.is_stalemate() or self.board.is_checkmate() or self.board.is_insufficient_material():
+                    self.result="1-0" if self.board.is_checkmate() and self.board.turn==chess.BLACK else "0-1" if self.board.is_checkmate() and self.board.turn==chess.WHITE else "1/2-1/2"
                 return True
             else:
                 return False
@@ -40,7 +42,9 @@ class chessGame:
                 'k': self.board.has_kingside_castling_rights(chess.BLACK),
                 'q': self.board.has_queenside_castling_rights(chess.BLACK),
             },
-            "enPassantTarget": None
+            "enPassantTarget": chess.square_file(self.board.ep_square) if self.board.ep_square is not None else None,
+            "halfmoveClock": self.board.halfmove_clock,
+            "fullmoveNumber": self.board.fullmove_number
         }
     
 def newGame(command=""):
