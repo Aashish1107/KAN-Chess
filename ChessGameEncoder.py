@@ -43,7 +43,7 @@ class ChessGameEncoder:
     def encode_board_history(self,tensor):
         for i,board in enumerate(reversed(self.board_history)):
             channelOffset=(i+1)*12
-            self.encode_single_board(self.board_history[i], channelOffset)
+            self.encode_single_board(tensor,self.board_history[i], channelOffset)
             
     def encode_single_board(self, tensor, board, channelOffset=0):
         for r in range(8):
