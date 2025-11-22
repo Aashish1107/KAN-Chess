@@ -21,22 +21,27 @@ class ChessGameEncoder:
             "whiteToMove":1,
             "castlingRights":{'K':True,'Q':True,'k':True,'q':True},
             "enPassantTarget":None,
+            "halfmoveClock": 0,
+            "fullmoveNumber": 0
         }
         
         return position
     def encode_position_to_tensor(self, board):
         #Generates a 8x8x119 numpy array/tensor representing the board position
-        tensor=np.zeros((8,8,119), dtype=np.uint8)
+        tensor=np.zeros((8,8,119), dtype=np.float16)
         # Encode board pieces -12 channels
         self.encode_single_board(tensor, self.board)
         #Encode history -84 channels
         self.encode_board_history(tensor)
         #Encode castling rights - 4 channels
         self.encode_castling(tensor, self.board["castlingRights"])
-        #Encode en passant target - 8 channel
+        #Encode en passant target - 8 channel(100-107)
         self.encode_enpassant(tensor,self.board["enPassantTarget"])
+        tensor [:,:,108]=self.board["halfmoveClock"]/100
+        tensor [:,:,109]=self.board["whiteToMove"]
         #Encode repetition count
-        #tensor+=self.encode_repeatition(self.board)
+        #self.encode_repeatition(self.board)
+        tensor[:,:,118]=self.board["fullmoveNumber"]/100.0
         
         return tensor
     
@@ -63,14 +68,22 @@ class ChessGameEncoder:
         if castlingRights['q']:
             tensor[:,:,99]=1
     def encode_enpassant(self, tensor, enPassantTarget):
-        print("Enpassant Target:", enPassantTarget)
         if enPassantTarget is not None:
             tensor[ :, : ,100+enPassantTarget]=1
         return tensor
     def encode_repeatition(self, board):
-        pass
+        for i in range(min(8,len(self.board_history))):
+            board=self.board_history[-(i+1)]
+            count=self.count_repeatitions(board)
+            channel=110+i
+            tensor[:,:,channel]=min(count,2)/2.0
     def count_repeatitions(self, board):
-        pass
+        count=0
+        board_fen=self.board_to_fen(board)
+        for past_board in self.board_history:
+            if self.board_to_fen(past_board["board"])==board_fen:
+                count+=1
+        return count
     def reset_board(self):
         self.board_history=[]
         self.board=self.create_starting_position()

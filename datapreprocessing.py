@@ -25,14 +25,15 @@ print(games[0])
 encoder=ChessGameEncoder()
 game=chessGame()
 #games[0]=["e4","a5","e5","d5"]
+#games[0]=["e4","e5","Ke2","Ke7","Ke1","Ke8","Ke2","Ke7"]
 for move in games[0]:
     game.move(move)
-    board_state=game.report()
-    encoder.new_state(board_state)
+    encoder.new_state(game.report())
 tensor=encoder.encode_position_to_tensor(encoder.board)
 print(game.report())
 encoder.visualize_channels(tensor, range(12))
-#encoder.visualize_channels(tensor, 103)
+encoder.visualize_channels(tensor, 103)
+#encoder.visualize_channels(tensor, [108,109,118])
 #encoder.visualize_channels(tensor, [25,26,27])
 #encoder.visualize_channels(tensor, [95,96,97,98,99])
 print(game.result)
